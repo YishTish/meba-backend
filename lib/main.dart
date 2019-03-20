@@ -1,278 +1,240 @@
+
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
-import 'package:http/http.dart' as http;
-import 'package:MeBa/User.dart' as User;
-import 'package:MeBa/Event.dart' as Event;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'login.dart' as Login;
+import 'models/User.dart' show User;
+import 'package:MeBa/controllers/EventController.dart' as EventController;
+import 'models/Event.dart' as EventModel;
+import 'views/NewEvent.dart' as EventForm;
+import 'views/SignInForm.dart' show LoginPage;
 
 void main() {
   runApp(new MeBa());
 }
 
-  // This widget is the root of your application.
-
 class MeBa extends StatelessWidget {
-//  final Future<User> user;
-
-//  MeBa({Key key, this.user}) : super(key: key);
-
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return MaterialApp(
       title: "MeBa Application",
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: new MeBaHomePage(title: "MeBa Application"),
-      );
+    );
   }
 }
 
 class MeBaHomePage extends StatefulWidget {
-  MeBaHomePage({Key key, this.title}) : super(key: key);
+  MeBaHomePage({Key key, this.title, this.initialUser}) : super(key: key);
   final String title;
+  final User initialUser;
+
 
   @override
-  _MeBaHomePageState createState(){
-    print("Create state!");
-    return new _MeBaHomePageState();
-  }
+  State createState() => new _MeBaHomePageState();
 }
 
 class _MeBaHomePageState extends State<MeBaHomePage> {
-  var userList = <User.User>[];
-  var num = 0;
-
-  _getUsers() async{
-    final stream = await User.getUsers();
-    stream.listen((user) => setState(() => userList.add(user)));
+  User user;
+  _MeBaHomePageState({initialUser}) {
+    Login.SignIn signIn = new Login.SignIn();
+    signIn.handleSignIn().then((signedInUser){
+      if(widget.initialUser == null){
+        if(signedInUser.userId == null){
+          loadSignInPage(signedInUser);
+        }
+        else{
+          user = signedInUser;
+        }
+      }
+    });
   }
 
   @override
   void initState() {
-    print("now let's init state");
-    // TODO: implement initState
     super.initState();
-    num = 6;
-    _getUsers();
+    setState(() {user = initialUser;});
+  }
+
+  void getUserFromDB() async{
+    Login.SignIn signIn = new Login.SignIn();
+    this.initialUser = await signIn.handleSignIn();
+//    initState();
+  }
+
+  void loadSignInPage(User user){
+    Route route = MaterialPageRoute(
+        builder: (context) => LoginPage(user: user));
+    Navigator.pushReplacement(context, route);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (this.user == null) {
+      return new Container();
+    } else {
+      return new Scaffold(
+        appBar: new AppBar(
+          leading: new CircleAvatar(
+            radius: 15,
+            backgroundImage: NetworkImage(user.profileImageBase64),
+          ),
+          title: new Text(user.firstName + " " + user.lastName)
+        ),
+        body: new EventsWidget(),
+        floatingActionButton: new FloatingActionButton(
+          onPressed: _routeToForm,
+            child: new IconButton(
+                icon: Icon(Icons.add),
+                color: Colors.white,
+                onPressed: _routeToForm),
+        )
+      );
+    }
+  }
+
+  void _routeToForm(){
+    Route route = MaterialPageRoute(builder: (context) => EventForm.EventRoute(EventController.EventController.createEvent()));
+    Navigator.push(context, route);
+  }
+
+//  Widget _buildUserList() {
+//    return new ListView.separated(
+//        separatorBuilder: (context, index) => Divider(
+//              color: Colors.black,
+//            ),
+//        itemCount: this.userList.length,
+//        itemBuilder: (context, index) => Padding(
+//            padding: EdgeInsets.all(2.0),
+//            child: Center(child: new UserWidget(userList[index]))));
+//  }
+}
+//
+class EventsWidget extends StatefulWidget {
+  EventsState createState() {
+    return new EventsState();
+  }
+}
+//
+class EventsState extends State {
+  EventController.EventController eventController;
+  List<EventModel.Event> events;
+
+  @override
+  void initState() {
+    if (events == null) {
+      events = new List();
+    }
+    super.initState();
+    eventController = new EventController.EventController();
+    eventController.getEvents((newEvents) {
+      this.setState(() => {this.events = newEvents});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title + num.toString()),
-      ),
-      body: _buildUserList(),
-//      body: new ListView(
-//        children: userList.map((user) => new UserWidget(user)).toList(),
-//      )
-    );
-  }
-
-  Widget _buildUserList(){
     return new ListView.separated(
-      separatorBuilder: (context, index) => Divider(
-        color: Colors.black,
-      ),
-      itemCount: this.userList.length,
-      itemBuilder: (context, index) => Padding(
-          padding: EdgeInsets.all(2.0),
-          child: Center(child: new UserWidget(userList[index]))
-        )
-    );
-  }
-}
-
-class UserListView extends ListView{
-  UserListView(this.users);
-  final List<User.User> users;
-
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 20,
-      itemBuilder: (context, index) =>
-          Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Center(child: Text(users[index].lastName))
-          ),
-    );
-  }
-}
-
-class RandomWordState extends State<RandomWords>{
-  final List<WordPair>_suggestions = <WordPair>[];
-  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
-  final Set<WordPair> _saved = new Set<WordPair>();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
-        actions: <Widget> [
-          new IconButton(icon: const Icon(Icons.list), onPressed: _pushSaved),
-        ]
-      ),
-      body: _buildSuggestions(),
-    );
-  }
-
-  void _pushSaved(){
-    Navigator.of(context).push(
-      new MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          final Iterable<ListTile> tiles = _saved.map(
-              (WordPair pair) {
-                return new ListTile(
-                    title: new Text(
-                      pair.asPascalCase,
-                      style: _biggerFont
-                    )
-                );
-              }
-          );
-        final List<Widget> divided = ListTile
-          .divideTiles(
-            context: context,
-            tiles: tiles,
-        ).toList();
-
-        return new Scaffold(
-          appBar: new AppBar(
-            title: const Text("Saved Suggerstions"),
-          ),
-          body: new ListView(children: divided),
-        );
-        },
-      ),
-    );
-  }
-
-
-  Widget _buildSuggestions(){
-    return ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemBuilder: (context, i){
-          if(i.isOdd) return Divider();
-
-          final index = i ~/ 2;
-          if(index >= _suggestions.length){
-            _suggestions.addAll(generateWordPairs().take(10));
-          }
-          return _buildRow(_suggestions[index]);
-        }
-        );
-  }
-
-  Widget _buildRow(WordPair pair){
-    final bool alreadySaved = _saved.contains(pair);
-    return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: _biggerFont
-      ),
-      trailing: new Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ),
-      onTap: () {
-        setState(() {
-          if(alreadySaved){
-            _saved.remove(pair);
-          }
-          else{
-            _saved.add(pair);
-          }
-        });
-      },
-    );
-  }
-}
-
-class RandomWords extends StatefulWidget{
-  RandomWordState createState() =>new RandomWordState();
-}
-
-class UserWidget extends StatelessWidget{
-  UserWidget(this.user);
-  final User.User user;
-
-  @override
-  Widget build(BuildContext context){
-    return new GestureDetector(
-      child: (
-          new ListTile(
-            leading: new CircleAvatar(
-              child: new Text(user.firstName[0]+user.lastName[0]),
-              backgroundColor: Colors.purple,
+        separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: Colors.black45,
             ),
-            title: new Text(user.firstName + " " + user.lastName),
-            subtitle: new Text(user.dateOfBirth),
-            isThreeLine: false,
-          )
-      ),
-      onTap: (){
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Event.EventRoute(user.firstName))
-        );
-      },
+        itemCount:events.length,
+        itemBuilder: (context, index) => Padding(
+            padding: EdgeInsets.all(2.0),
+            child: EventItem(events[index]
+        )
+      )
     );
   }
+}
 
-//    return new ListTile(
-//      leading: new CircleAvatar(
-//        child: new Text(user.firstName[0]+user.lastName[0]),
-//        backgroundColor: Colors.purple,
-//      ),
-//      title: new Text(user.firstName + " " + user.lastName),
-//      subtitle: new Text(user.dateOfBirth),
-//      isThreeLine: false,
-//    );
-//    FutureBuilder<User>(
-//      future: getUser(),
-//      builder: (context, snapshot) {
-//        if(snapshot.hasData){
-//          return Text(snapshot.data.firstName);
-//        }
-//        else if (snapshot.hasError){
-//          return Text("${snapshot.error}");
-//        }
-//        return CircularProgressIndicator();
+class EventItem extends StatelessWidget {
+  final EventModel.Event event;
+  EventItem(this.event);
+
+  Widget build(BuildContext context) {
+    Color iconColor = Colors.blue;
+    return ListTile(
+        leading: CircleAvatar(
+            backgroundColor: Colors.blue, child: Text(event.name[0])),
+        title: Text(event.name),
+        subtitle: Text(event.eventDateTime),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            IconButton(
+              iconSize: 20,
+              alignment: Alignment(0, 0),
+              disabledColor: Colors.yellow,
+              color: iconColor,
+              icon: Icon(FontAwesomeIcons.handPointUp),
+              onPressed: (() {
+                print("Clicked on Icon");
+              }),
+              splashColor: Colors.green,
+              highlightColor: Colors.blue,
+            ),
+            IconButton(
+              iconSize: 20,
+              alignment: Alignment(0, 0),
+              disabledColor: Colors.yellow,
+              color: iconColor,
+              icon: Icon(FontAwesomeIcons.handPointDown),
+              onPressed: (() {
+                print("Clicked on Icon");
+              }),
+              splashColor: Colors.green,
+              highlightColor: Colors.blue,
+            ),
+            IconButton(
+              iconSize: 20,
+              alignment: Alignment(0, 0),
+              disabledColor: Colors.yellow,
+              color: iconColor,
+              icon: Icon(FontAwesomeIcons.bell),
+              onPressed: (() {
+                print("Clicked on Icon");
+              }),
+              splashColor: Colors.green,
+              highlightColor: Colors.blue,
+            )
+          ],
+        ));
+  }
+}
+
+//class UserWidget extends StatelessWidget {
+//  UserWidget(this.user);
+//  final User.User user;
+//
+//  @override
+//  Widget build(BuildContext context) {
+//    return new GestureDetector(
+//      child: (new ListTile(
+//        leading: new CircleAvatar(
+//          child: new Text(user.firstName[0] + user.lastName[0]),
+//          backgroundColor: Colors.purple,
+//        ),
+//        title: new Text(user.firstName + " " + user.lastName),
+//        subtitle: new Text(user.dateOfBirth),
+//        isThreeLine: false,
+//      )),
+//      onTap: () {
+//        Navigator.push(
+//            context,
+//            MaterialPageRoute(
+//                builder: (context) => Event.EventRoute(user.firstName)));
 //      },
 //    );
 //  }
-}
-
-//class _UserState extends State<UserWidget> {
-////  var userList = <Users.User>[];
-////
-////  _getUsers() async{
-////    final stream = await Users.getUser();
-////    stream.listen((user) => setState(() => userList.add(user)));
-////  }
-////
-////  @override
-////  void initState() {
-////    // TODO: implement initState
-////    super.initState();
-////    _getUsers();
-////  }
-////
-////  @override
-////  Widget build(BuildContext context) {
-////    // TODO: implement build
-////    return new Scaffold(
-////      appBar: new AppBar(
-////        title: new Text(widget.title),
-////      ),
-////      body: new ListView(
-////        children: userList.map((user) => new UserWidget(user)).toList(),
-////      ),
-////    );
-////  }
-////
-////}
+//}

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "92714180074",
+    "firebase_url": "https://eventer-4a410.firebaseio.com",
+    "project_id": "eventer-4a410",
+    "storage_bucket": "eventer-4a410.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92714180074:android:3246d7bc55444a30",
+        "android_client_info": {
+          "package_name": "com.yishail.meba"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "92714180074-17j2t1h6giak8ku53ekgd3eq3598ivrm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yishail.meba",
+            "certificate_hash": "7b33522c077b5eda304fb1c0763f5ded37deaafa"
+          }
+        },
+        {
+          "client_id": "92714180074-bjt4jddo96vcrifaigq521edoofd2rhn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW83_VmM71p2jEqqtCyErBFCOfd_4noqc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "92714180074-bjt4jddo96vcrifaigq521edoofd2rhn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

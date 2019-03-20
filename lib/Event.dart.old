@@ -1,8 +1,13 @@
-import 'dart:convert';
-
 import 'package:MeBa/User.dart' as User;
 import 'package:flutter/material.dart';
 
+class Event {
+  List<String> attendees;
+  String description;
+  String location;
+  String name;
+  DateTime time;
+}
 class EventRoute extends StatelessWidget{
   EventRoute(this.eventName);
   final String eventName;
