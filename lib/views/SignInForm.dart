@@ -82,10 +82,7 @@ class UserFormState extends State<LoginForm> {
               alignment: Alignment.center,
               margin: EdgeInsets.symmetric(horizontal: 10, vertical: 30),
               child: RaisedButton(
-                  onPressed: (){
-                    _formKey.currentState.save();
-                    new UserController().addUser(user);
-                    },
+                  onPressed: saveUserAndReturnToMain,
                   color: Colors.blue,
                   textColor:  Colors.white,
                   child: Text("Register")
@@ -100,7 +97,7 @@ class UserFormState extends State<LoginForm> {
     _formKey.currentState.save();
     new UserController().addUser(widget.user);
     Route route = MaterialPageRoute(
-        builder: (context) => MeBaHomePage(initialUser: user));
+        builder: (context) => MeBaHomePage(initialUser: widget.user));
     Navigator.pushReplacement(context, route);
 
   }

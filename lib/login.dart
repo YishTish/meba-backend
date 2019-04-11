@@ -1,7 +1,6 @@
-
+import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +22,15 @@ class SignIn{
   Future<User> handleSignIn() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final memberDetails = await http.get("http://10.0.2.2:3000/v1/member/123",
+      headers: {HttpHeaders.authorizationHeader: "Bearer "+googleAuth.idToken});
+    if(memberDetails.statusCode != 200){
+      print("status code: "+ memberDetails.statusCode.toString());
+      print(memberDetails.body);
+    }
+    else{
+      print(memberDetails.body);
+    }
 
     final AuthCredential credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
     this._firebaseUser = await _auth.signInWithCredential(credential);

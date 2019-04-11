@@ -13,6 +13,7 @@ import 'models/User.dart' show User;
 import 'package:MeBa/controllers/EventController.dart' as EventController;
 import 'models/Event.dart' as EventModel;
 import 'views/NewEvent.dart' as EventForm;
+import 'views/EventsList.dart' show EventsPage;
 import 'views/SignInForm.dart' show LoginPage;
 
 void main() {
@@ -27,14 +28,13 @@ class MeBa extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MeBaHomePage(title: "MeBa Application"),
+      home: new MeBaHomePage(initialUser: null),
     );
   }
 }
 
 class MeBaHomePage extends StatefulWidget {
-  MeBaHomePage({Key key, this.title, this.initialUser}) : super(key: key);
-  final String title;
+  MeBaHomePage({Key key, this.initialUser}) : super(key: key);
   final User initialUser;
 
 
@@ -44,7 +44,7 @@ class MeBaHomePage extends StatefulWidget {
 
 class _MeBaHomePageState extends State<MeBaHomePage> {
   User user;
-  _MeBaHomePageState({initialUser}) {
+  _MeBaHomePageState() {
     Login.SignIn signIn = new Login.SignIn();
     signIn.handleSignIn().then((signedInUser){
       if(widget.initialUser == null){
@@ -52,22 +52,12 @@ class _MeBaHomePageState extends State<MeBaHomePage> {
           loadSignInPage(signedInUser);
         }
         else{
-          user = signedInUser;
+          setState(() {
+            user = signedInUser;
+          });
         }
       }
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    setState(() {user = initialUser;});
-  }
-
-  void getUserFromDB() async{
-    Login.SignIn signIn = new Login.SignIn();
-    this.initialUser = await signIn.handleSignIn();
-//    initState();
   }
 
   void loadSignInPage(User user){
@@ -81,23 +71,24 @@ class _MeBaHomePageState extends State<MeBaHomePage> {
     if (this.user == null) {
       return new Container();
     } else {
-      return new Scaffold(
-        appBar: new AppBar(
-          leading: new CircleAvatar(
-            radius: 15,
-            backgroundImage: NetworkImage(user.profileImageBase64),
-          ),
-          title: new Text(user.firstName + " " + user.lastName)
-        ),
-        body: new EventsWidget(),
-        floatingActionButton: new FloatingActionButton(
-          onPressed: _routeToForm,
-            child: new IconButton(
-                icon: Icon(Icons.add),
-                color: Colors.white,
-                onPressed: _routeToForm),
-        )
-      );
+      return new EventsPage(user:this.user);
+//      return new Scaffold(
+//        appBar: new AppBar(
+//          leading: new CircleAvatar(
+//            radius: 15,
+//            backgroundImage: NetworkImage(user.profileImageBase64),
+//          ),
+//          title: new Text(user.firstName + " " + user.lastName)
+//        ),
+//        body: new EventsWidget(),
+//        floatingActionButton: new FloatingActionButton(
+//          onPressed: _routeToForm,
+//            child: new IconButton(
+//                icon: Icon(Icons.add),
+//                color: Colors.white,
+//                onPressed: _routeToForm),
+//        )
+//      );
     }
   }
 
@@ -212,29 +203,3 @@ class EventItem extends StatelessWidget {
         ));
   }
 }
-
-//class UserWidget extends StatelessWidget {
-//  UserWidget(this.user);
-//  final User.User user;
-//
-//  @override
-//  Widget build(BuildContext context) {
-//    return new GestureDetector(
-//      child: (new ListTile(
-//        leading: new CircleAvatar(
-//          child: new Text(user.firstName[0] + user.lastName[0]),
-//          backgroundColor: Colors.purple,
-//        ),
-//        title: new Text(user.firstName + " " + user.lastName),
-//        subtitle: new Text(user.dateOfBirth),
-//        isThreeLine: false,
-//      )),
-//      onTap: () {
-//        Navigator.push(
-//            context,
-//            MaterialPageRoute(
-//                builder: (context) => Event.EventRoute(user.firstName)));
-//      },
-//    );
-//  }
-//}

@@ -1,0 +1,20 @@
+{
+  "web": {
+    "client_id": "92714180074-bjt4jddo96vcrifaigq521edoofd2rhn.apps.googleusercontent.com",
+    "project_id": "eventer-4a410",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_secret": "XvwTgp2zinvBmp1sxVhjnGFj",
+    "redirect_uris": [
+      "https://eventer-4a410.firebaseapp.com/__/auth/handler",
+      "http://localhost:3000/auth"
+    ],
+    "javascript_origins": [
+      "http://localhost",
+      "http://localhost:5000",
+      "https://eventer-4a410.firebaseapp.com",
+      "http://localhost:3000"
+    ]
+  }
+}

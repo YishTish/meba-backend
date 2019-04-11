@@ -1,0 +1,56 @@
+{
+  "definitions" : {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "memberBody": {
+      "type": "object",
+      "title": "Member entity definitions",
+      "required": [
+        "firstName",
+        "phoneId"
+      ],
+      "properties": {
+        "firstName": {
+          "$id": "#/properties/firstName",
+          "type": "string",
+          "title": "First Name",
+          "default": "",
+          "examples": [
+            "Yishai"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "lastName": {
+          "$id": "#/properties/lastName",
+          "type": "string",
+          "title": "Last Name",
+          "default": "",
+          "examples": [
+            "Landau"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "phoneNumber": {
+          "$id": "#/properties/phoneNumber",
+          "type": "string",
+          "title": "Phone Number",
+          "default": "",
+          "examples": [
+            "+(972)54-9792080"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "phoneId": {
+          "$id": "#/properties/phoneId",
+          "type": "string",
+          "title": "Phone UUID",
+          "default": "",
+          "examples": [
+            "12345"
+          ],
+          "pattern": "^(.*)$"
+        }
+    }
+    }
+  }
+}

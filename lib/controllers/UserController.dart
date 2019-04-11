@@ -35,12 +35,12 @@ class UserController{
   }
 
   void addUser(User user){
-    Firestore.instance.collection("members").add({
+    Firestore.instance.collection("members").document("NewUniqueId").setData({
       "profileImageBase64":user.profileImageBase64,
       "identifier": user.identifier,
       "firstName": user.firstName,
       "lastName": user.lastName,
       "phoneNumber": user.phoneNumber
-    }).then((response) => user.userId = response.documentID);
+    });
   }
 }
