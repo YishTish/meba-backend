@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require('fs');
 
 module.exports = function (options) {
-    return async function(request, response, next){
+    return (request, response, next) => {
         try{
             const controllerDirectory = options.controllerDirectory;
             if(!controllerDirectory){
@@ -27,6 +27,15 @@ module.exports = function (options) {
                             break;
                         case 'query':
                             param.value = request.query[param.name];
+                        case 'header':
+                            param.value = request.headers[param.name];
+                        case 'formData':
+                            if(param.type === "string"){
+                                param.value = request.body[param.name];
+                            }
+                            else if(param.type === "file"){
+                                param.value = request.files[param.name];
+                            }
                     }
                 });
                 const swaggerParams = {};
